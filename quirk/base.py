@@ -197,12 +197,12 @@ class Base(object):
                 self._subheader(col.name)
 
                 lines = ['Type: %s' % column_type, 'Unique values: %s' %
-                                unique_count, 'Missing values: %s' %
-                                null_count]
+                                unique_count,
+                                self._show_pct('Missing values: %s', null_count, info['total_count'])]
 
                 if column_type == 'number':
                     outliers = info['total_count'] - len(self._drop_outliers(self._train_df, col.name))
-                    lines.append('Outliers: %d' % outliers)
+                    lines.append(self._show_pct('Outliers: %d', outliers, info['total_count']))
 
                 self._paragraph(*lines)
 
@@ -232,6 +232,14 @@ class Base(object):
                     self._plot_category(col.name + '_weekday')
 
         self._show_geo()
+
+    @staticmethod
+    def _show_pct(message, num, denom):
+        message = message % num
+        if num > 0:
+            pct = 100.0 * num / denom
+            message += ' (%.1f%%)' % round(pct, 1)
+        return message
 
     def _show_geo(self):
         train_df = self._train_df
