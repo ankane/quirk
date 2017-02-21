@@ -201,7 +201,7 @@ class Base(object):
                                 self._show_pct('Missing values: %s', null_count, info['total_count'])]
 
                 if column_type == 'number':
-                    outliers = info['total_count'] - len(self._drop_outliers(self._train_df.dropna(subset=[col.name]), col.name))
+                    outliers = info['total_count'] - null_count - len(self._drop_outliers(self._train_df.dropna(subset=[col.name]), col.name))
                     lines.append(self._show_pct('Outliers: %d', outliers, info['total_count']))
 
                 self._paragraph(*lines)
