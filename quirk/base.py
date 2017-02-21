@@ -1,4 +1,3 @@
-import warnings
 from abc import ABCMeta, abstractmethod
 from collections import OrderedDict
 import __main__
@@ -85,12 +84,10 @@ class Base(object):
         # TODO one hot encoding for linear regression
         for f in train_model_df.columns:
             if train_model_df[f].dtype == 'object':
-                with warnings.catch_warnings():
-                    warnings.filterwarnings('ignore', r'numpy')
-                    lbl = preprocessing.LabelEncoder()
-                    train_model_df[f] = lbl.fit_transform(train_model_df[f])
-                    if self._test_df is not None:
-                        test_model_df[f] = lbl.fit_transform(test_model_df[f])
+                lbl = preprocessing.LabelEncoder()
+                train_model_df[f] = lbl.fit_transform(train_model_df[f].fillna('?'))
+                if self._test_df is not None:
+                    test_model_df[f] = lbl.fit_transform(test_model_df[f].fillna('?'))
 
         dev_x, val_x, dev_y, val_y = model_selection.train_test_split(
             train_model_df, self._y(), test_size=0.33, random_state=2016)
@@ -112,7 +109,8 @@ class Base(object):
 
         # comparison
         self._subheader('Comparison')
-        self._plot(sns.barplot(x=scores.keys(), y=scores.values()))
+        # odict hack for Python 3
+        self._plot(sns.barplot(x=list(scores.keys()), y=list(scores.values())))
 
         # show xgboost info
         self._subheader('XGBoost')
@@ -141,7 +139,7 @@ class Base(object):
     def _fetch_data(data):
         if data is None:
             return None
-        elif isinstance(data, basestring):
+        elif isinstance(data, str):
             if data.endswith('.json'):
                 return pd.read_json(data)
             else:
