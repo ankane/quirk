@@ -195,9 +195,16 @@ class Base(object):
 
             if viz:
                 self._subheader(col.name)
-                self._paragraph('Type: %s' % column_type, 'Unique values: %s' %
+
+                lines = ['Type: %s' % column_type, 'Unique values: %s' %
                                 unique_count, 'Missing values: %s' %
-                                null_count)
+                                null_count]
+
+                if column_type == 'number':
+                    outliers = info['total_count'] - len(self._drop_outliers(col))
+                    lines.append('Outliers: %d' % outliers)
+
+                self._paragraph(*lines)
 
             # add features
             if column_type == 'number' or column_type == 'category':
@@ -234,13 +241,18 @@ class Base(object):
             self._subheader("Geo")
 
             # drop outliers
-            # TODO do this better
-            data = train_df[(train_df['latitude'] != 0) & (train_df['longitude'] != 0)]
+            data = train_df.copy()
+            for col in ['latitude', 'longitude']:
+                data[col] = self._drop_outliers(data[col])
 
             # TODO use map
             self._plot(sns.lmplot(y='latitude', x='longitude', hue='interest_level', fit_reg=False, data=data))
 
             # TODO geohashes
+
+    @staticmethod
+    def _drop_outliers(col):
+        return col[~((col - col.mean()).abs() > 3 * col.std())]
 
     def _y(self):
         return self._train_df[self._target_col]
