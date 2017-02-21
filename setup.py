@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='quirk',
-    version='0.1.0',
+    version='0.1.1',
     description='Your data science sidekick',
     url='https://github.com/ankane/quirk',
     author='Andrew Kane',
