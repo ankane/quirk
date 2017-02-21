@@ -8,7 +8,7 @@ With a few lines of code, do:
 - feature engineering
 - predictive modeling
 
-[See a demo]()
+[See a demo](https://github.com/ankane/quirk/blob/demos/demos/Titanic.ipynb)
 
 ## Installation
 
