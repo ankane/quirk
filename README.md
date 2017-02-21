@@ -69,6 +69,12 @@ train_df = pd.read_csv('train.csv')
 quirk.Classifier(train_data=train_df, ...)
 ```
 
+Specify datetime columns with:
+
+```python
+quirk.Classifier(datetime_cols=['created'], ...)
+```
+
 ## Modeling
 
 Quirk builds and compares different models. Currently, it uses:
