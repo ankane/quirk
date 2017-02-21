@@ -5,6 +5,6 @@ install:
 	pip install -r requirements.txt
 
 publish:
-	python setup.py bdist_wheel
+	python setup.py bdist_wheel --universal
 	# twine upload dist/*
 	rm -fr build dist quirk.egg-info
