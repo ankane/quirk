@@ -201,7 +201,7 @@ class Base(object):
                                 null_count]
 
                 if column_type == 'number':
-                    outliers = info['total_count'] - len(self._drop_outliers(col))
+                    outliers = info['total_count'] - len(self._drop_outliers(self._train_df, col.name))
                     lines.append('Outliers: %d' % outliers)
 
                 self._paragraph(*lines)
@@ -240,12 +240,12 @@ class Base(object):
 
         # latitude and longtitude
         if all(x in train_df.keys() for x in geo_cols):
-            self._subheader("Geo")
+            self._subheader("latitude & longitude")
 
             # drop outliers
             data = train_df.dropna(subset=geo_cols)
             for col in geo_cols:
-                data[col] = self._drop_outliers(data[col])
+                data = self._drop_outliers(data, col)
 
             # TODO use map
             self._plot(sns.lmplot(y='latitude', x='longitude', hue='interest_level', fit_reg=False, data=data))
@@ -253,8 +253,8 @@ class Base(object):
             # TODO geohashes
 
     @staticmethod
-    def _drop_outliers(col):
-        return col[~((col - col.mean()).abs() > 3 * col.std())]
+    def _drop_outliers(data, name):
+        return data[~((data[name] - data[name].mean()).abs() > 2.5 * data[name].std())]
 
     def _y(self):
         return self._train_df[self._target_col]

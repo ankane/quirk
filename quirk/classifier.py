@@ -22,6 +22,8 @@ class Classifier(Base):
 
     def _plot_number(self, name):
         data = self._train_features_df.dropna(subset=[name])
+        data = self._drop_outliers(data, name)
+
         self._plot(sns.distplot(data[name]))
         self._plot(sns.boxplot(y=name, x=self._target_col,
                                data=data))
