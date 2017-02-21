@@ -254,7 +254,11 @@ class Base(object):
 
     @staticmethod
     def _drop_outliers(data, name):
-        return data[~((data[name] - data[name].mean()).abs() > 2.5 * data[name].std())]
+        quartile_1, quartile_3 = np.percentile(data[name], [25, 75])
+        iqr = quartile_3 - quartile_1
+        lower_bound = quartile_1 - (iqr * 1.5)
+        upper_bound = quartile_3 + (iqr * 1.5)
+        return data[(data[name] >= lower_bound) & (data[name] <= upper_bound)]
 
     def _y(self):
         return self._train_df[self._target_col]
