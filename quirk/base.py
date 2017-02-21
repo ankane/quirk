@@ -224,6 +224,24 @@ class Base(object):
                     self._plot_category(col.name + '_hour')
                     self._plot_category(col.name + '_weekday')
 
+        self._show_geo()
+
+    def _show_geo(self):
+        train_df = self._train_df
+
+        # latitude and longtitude
+        if all(x in train_df.keys() for x in ['latitude', 'longitude']):
+            self._subheader("Geo")
+
+            # drop outliers
+            # TODO do this better
+            data = train_df[(train_df['latitude'] != 0) & (train_df['longitude'] != 0)]
+
+            # TODO use map
+            self._plot(sns.lmplot(y='latitude', x='longitude', hue='interest_level', fit_reg=False, data=data))
+
+            # TODO geohashes
+
     def _y(self):
         return self._train_df[self._target_col]
 
