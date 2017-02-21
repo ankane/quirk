@@ -6,5 +6,6 @@ install:
 
 publish:
 	python setup.py bdist_wheel --universal
+	ls dist
 	# twine upload dist/*
 	rm -fr build dist quirk.egg-info
