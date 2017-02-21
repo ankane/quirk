@@ -262,6 +262,7 @@ class Base(object):
 
     @staticmethod
     def _drop_outliers(data, name):
+        # TODO check dataset skew
         quartile_1, quartile_3 = np.percentile(data[name], [25, 75])
         iqr = quartile_3 - quartile_1
         lower_bound = quartile_1 - (iqr * 1.5)
