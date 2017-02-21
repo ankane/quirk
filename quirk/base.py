@@ -236,13 +236,15 @@ class Base(object):
     def _show_geo(self):
         train_df = self._train_df
 
+        geo_cols = ['latitude', 'longitude']
+
         # latitude and longtitude
-        if all(x in train_df.keys() for x in ['latitude', 'longitude']):
+        if all(x in train_df.keys() for x in geo_cols):
             self._subheader("Geo")
 
             # drop outliers
-            data = train_df.copy()
-            for col in ['latitude', 'longitude']:
+            data = train_df.dropna(subset=geo_cols)
+            for col in geo_cols:
                 data[col] = self._drop_outliers(data[col])
 
             # TODO use map
