@@ -288,8 +288,12 @@ class Base(object):
     def _col_info(col):
         total_count = len(col)
 
+        average_words = None
         try:
             unique_count = len(col.unique())
+            if col.dtype == 'object':
+                word_count = col.apply(lambda x: len((x or '').split(' ')))
+                average_words = word_count.where(word_count > 0).mean()
         except TypeError:
             unique_count = len(col.apply(tuple).unique())
 
@@ -301,12 +305,10 @@ class Base(object):
         numeric = col.dtype == 'int64' or col.dtype == 'float64'
         if col.dtype == 'datetime64[ns]':
             column_type = 'time'
+        elif average_words != None and average_words > 10:
+            column_type = 'text'
         elif unique_count / float(total_count) > 0.95:
-            # TODO better text detection
-            if col.dtype == 'object' and col.dropna().head(10).apply(lambda x: len(x)).mean() > 50:
-                column_type = 'text'
-            else:
-                column_type = 'unique'
+            column_type = 'unique'
         elif col.name.endswith('id') or unique_count <= 20:
             column_type = 'category'
         elif numeric:
