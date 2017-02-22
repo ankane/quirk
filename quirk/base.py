@@ -118,19 +118,22 @@ class Base(object):
 
         # save data
         if self._test_df is not None:
-            self._header('Test Predictions')
+            self._save_results(train_model_df, y, test_model_df)
 
-            # retrain model on all data
-            preds = self._xgboost_predict(train_model_df, y, test_model_df)
+    def _save_results(self, train_x, train_y, test_x):
+        self._header('Test Predictions')
 
-            out_df = pd.DataFrame()
-            out_df[id_col] = self._test_df[id_col].values
-            out_df[target_col] = preds
+        # retrain model on all data
+        preds = self._xgboost_predict(train_x, train_y, test_x)
 
-            filename = 'results.csv'
-            out_df.to_csv(filename, index=False)
-            self._table(out_df.head())
-            self._paragraph('Saved to %s' % filename)
+        out_df = pd.DataFrame()
+        out_df[self._id_col] = self._test_df[self._id_col].values
+        out_df[self._target_col] = preds
+
+        filename = 'results.csv'
+        out_df.to_csv(filename, index=False)
+        self._table(out_df.head())
+        self._paragraph('Saved to %s' % filename)
 
     @staticmethod
     def _fetch_data(data):
