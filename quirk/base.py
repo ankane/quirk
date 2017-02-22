@@ -84,6 +84,7 @@ class Base(object):
 
         train_model_df = self._train_features_df.drop(target_col, axis=1)
         test_model_df = self._test_features_df.copy()
+        y = self._y()
 
         # make numeric
         # TODO one hot encoding for linear regression
@@ -95,17 +96,10 @@ class Base(object):
                     test_model_df[f] = lbl.fit_transform(test_model_df[f].fillna('?'))
 
         dev_x, val_x, dev_y, val_y = model_selection.train_test_split(
-            train_model_df, self._y(), test_size=0.33, random_state=2016)
-
-        predictions = OrderedDict()
+            train_model_df, y, test_size=0.33, random_state=2016)
 
         # benchmark models
-        self._benchmark_results(predictions, dev_y, len(val_x))
-
-        # xgboost
-        model = self._model()
-        model.fit(dev_x, dev_y)
-        predictions['XGBoost'] = model.predict(val_x)
+        predictions = self._build_models(dev_x, dev_y, val_x)
 
         # score models
         scores = OrderedDict()
@@ -119,18 +113,16 @@ class Base(object):
 
         # show xgboost info
         self._subheader('XGBoost')
-        self._paragraph('RMSE: %f' % scores['XGBoost'])
-        self._plot(xgb.plot_importance(model))
+        self._paragraph('Score: %f' % scores['XGBoost'])
+        self._plot(xgb.plot_importance(self._xgboost_model))
 
         # save data
         if self._test_df is not None:
             self._header('Test Predictions')
 
             # retrain model on all data
-            final_model = self._model()
-            final_model.fit(train_model_df, self._y())
+            preds = self._xgboost_predict(train_model_df, y, test_model_df)
 
-            preds = final_model.predict(test_model_df)
             out_df = pd.DataFrame()
             out_df[id_col] = self._test_df[id_col].values
             out_df[target_col] = preds
@@ -292,16 +284,21 @@ class Base(object):
         try:
             unique_count = len(col.unique())
             if col.dtype == 'object':
-                word_count = col.apply(lambda x: len((x or '').split(' ')))
-                average_words = word_count.where(word_count > 0).mean()
+                try:
+                    word_count = col.apply(lambda x: len((x or '').split(' ')))
+                    average_words = word_count.where(word_count > 0).mean()
+                except AttributeError:
+                    pass
+
         except TypeError:
             unique_count = len(col.apply(tuple).unique())
 
-        if col.dtype == 'object':
-            # TODO distinguish betewen blank and missing
-            null_count = col.apply(lambda x: len(x or '') == 0).sum()
-        else:
-            null_count = col.isnull().sum()
+
+        # if col.dtype == 'object':
+        #     # TODO distinguish betewen blank and missing
+        #     null_count = col.apply(lambda x: len(x or '') == 0).sum()
+        # else:
+        null_count = col.isnull().sum()
 
         numeric = col.dtype == 'int64' or col.dtype == 'float64'
         if col.dtype == 'datetime64[ns]':
@@ -356,11 +353,11 @@ class Base(object):
         pass
 
     @abstractmethod
-    def _model():
+    def _xgboost_predict(self, dev_x, dev_y, val_x):
         pass
 
     @abstractmethod
-    def _benchmark_results(results, dev_y, rows):
+    def _build_models(self, dev_x, dev_y, val_x):
         pass
 
     @abstractmethod

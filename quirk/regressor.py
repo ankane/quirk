@@ -1,4 +1,5 @@
 from math import sqrt
+from collections import OrderedDict
 import pandas as pd
 import seaborn as sns
 from sklearn.metrics import mean_squared_error
@@ -27,14 +28,18 @@ class Regressor(Base):
         self._plot(sns.regplot(x=name, y=self._target_col,
                                data=data))
 
-    @staticmethod
-    def _benchmark_results(results, dev_y, rows):
-        results['Mean'] = pd.Series([dev_y.mean()] * rows)
-        results['Median'] = pd.Series([dev_y.median()] * rows)
+    def _build_models(self, dev_x, dev_y, val_x):
+        predictions = OrderedDict()
+        predictions['Mean'] = pd.Series([dev_y.mean()] * len(val_x))
+        predictions['Median'] = pd.Series([dev_y.median()] * len(val_x))
+        predictions['XGBoost'] = self._xgboost_predict(dev_x, dev_y, val_x)
+        return predictions
 
-    @staticmethod
-    def _model():
-        return xgb.XGBRegressor(seed=2016)
+    def _xgboost_predict(self, dev_x, dev_y, val_x):
+        model = xgb.XGBRegressor(seed=2016)
+        model.fit(dev_x, dev_y)
+        self._xgboost_model = model # hack
+        return model.predict(val_x)
 
     @staticmethod
     def _score(act, pred):

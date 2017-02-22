@@ -1,3 +1,4 @@
+from collections import OrderedDict
 import pandas as pd
 import seaborn as sns
 from sklearn.metrics import accuracy_score
@@ -28,14 +29,19 @@ class Classifier(Base):
         self._plot(sns.boxplot(y=name, x=self._target_col,
                                data=data))
 
-    @staticmethod
-    def _benchmark_results(results, dev_y, rows):
-        mode = dev_y.value_counts().index[0]
-        results['Mode'] = pd.Series([mode] * rows)
 
-    @staticmethod
-    def _model():
-        return xgb.XGBClassifier(seed=2016)
+    def _build_models(self, dev_x, dev_y, val_x):
+        predictions = OrderedDict()
+        mode = dev_y.value_counts().index[0]
+        predictions['Mode'] = pd.Series([mode] * len(val_x))
+        predictions['XGBoost'] = self._xgboost_predict(dev_x, dev_y, val_x)
+        return predictions
+
+    def _xgboost_predict(self, dev_x, dev_y, val_x):
+        model = xgb.XGBClassifier(seed=2016)
+        model.fit(dev_x, dev_y)
+        self._xgboost_model = model # hack
+        return model.predict(val_x)
 
     @staticmethod
     def _score(act, pred):
