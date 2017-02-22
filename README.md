@@ -75,7 +75,7 @@ Specify datetime columns with:
 quirk.Classifier(datetime_cols=['created'], ...)
 ```
 
-To specify a custom eval metric, use: [master]
+Specify an eval metric with: [master]
 
 ```python
 quirk.Regressor(eval_metric='rmsle', ...)
