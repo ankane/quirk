@@ -42,7 +42,7 @@ class Classifier(Base):
     def _xgboost_predict(self, train_x, train_y, test_x, test_y):
         if self._eval_metric == 'mlogloss':
             params = {
-                'seed': 2016,
+                'seed': self._seed,
                 'objective': 'multi:softprob',
                 'eval_metric': 'mlogloss',
                 'num_class': len(self._classes)
@@ -59,7 +59,7 @@ class Classifier(Base):
                 eval_set = []
             else:
                 eval_set = [(train_x, train_y), (test_x, test_y)]
-            model = xgb.XGBClassifier(seed=2016)
+            model = xgb.XGBClassifier(seed=self._seed)
             model.fit(train_x, train_y, eval_set=eval_set)
             self._xgboost_model = model # hack
             return model.predict(test_x)

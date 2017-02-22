@@ -37,7 +37,7 @@ class Regressor(Base):
         return predictions
 
     def _xgboost_predict(self, train_x, train_y, test_x, test_y):
-        model = xgb.XGBRegressor(seed=2016)
+        model = xgb.XGBRegressor(seed=self._seed)
         if test_y is None:
             eval_set = []
         else:

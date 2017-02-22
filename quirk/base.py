@@ -51,6 +51,7 @@ class Base(object):
         self._target_col = target_col
         self._id_col = id_col
         self._eval_metric = eval_metric
+        self._seed = 2016
 
         self._train_features_df = None
         self._test_features_df = None
@@ -102,7 +103,7 @@ class Base(object):
             self._classes = le.classes_
 
         dev_x, val_x, dev_y, val_y = model_selection.train_test_split(
-            train_model_df, y, test_size=0.33, random_state=2016)
+            train_model_df, y, test_size=0.33, random_state=self._seed)
 
         # benchmark models
         predictions = self._build_models(dev_x, dev_y, val_x, val_y)
