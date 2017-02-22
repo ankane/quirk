@@ -81,7 +81,7 @@ Quirk has support for a number of eval metrics.
 
 Classification
 
-- `error` - % incorrect (default)
+- `accuracy` - # correct / total (default)
 - `mlogloss` - multi class log loss
 
 Regression
@@ -114,7 +114,7 @@ cd python-package; sudo python setup.py install
 
 Dataset | Eval Metric | v0.1 | Current
 --- | --- | --- | ---
-[Titanic](https://www.kaggle.com/c/titanic) | Error | 0.77512 | -
+[Titanic](https://www.kaggle.com/c/titanic) | Accuracy | 0.77512 | -
 [Rental Listing Inquiries](https://www.kaggle.com/c/two-sigma-connect-rental-listing-inquiries) | Multi Class Log Loss | - | 0.64431
 [House Prices](https://www.kaggle.com/c/house-prices-advanced-regression-techniques) | RMSLE | 0.14069 | -
 
