@@ -75,6 +75,18 @@ Specify datetime columns with:
 quirk.Classifier(datetime_cols=['created'], ...)
 ```
 
+To specify a custom eval metric, use: [master]
+
+```python
+quirk.Regressor(eval_metric='rmsle', ...)
+```
+
+or
+
+```python
+quirk.Classifier(eval_metric='mlogloss', ...)
+```
+
 ## Modeling
 
 Quirk builds and compares different models. Currently, it uses:
@@ -92,17 +104,11 @@ cd python-package; sudo python setup.py install
 
 ## Performance
 
-Classification
-
-Dataset | Measure | v0.1
---- | --- | ---
-[Titanic](https://www.kaggle.com/c/titanic) | Accuracy | 0.77512
-
-Regression
-
-Dataset | Measure | v0.1
---- | --- | ---
-[House Prices](https://www.kaggle.com/c/house-prices-advanced-regression-techniques) | RMSLE | 0.14069
+Dataset | Eval Metric | v0.1 | Current
+--- | --- | --- | ---
+[Titanic](https://www.kaggle.com/c/titanic) | Accuracy | 0.77512 | -
+[Rental Listing Inquiries](https://www.kaggle.com/c/two-sigma-connect-rental-listing-inquiries) | Multi Class Log Loss | - | 0.64431
+[House Prices](https://www.kaggle.com/c/house-prices-advanced-regression-techniques) | RMSLE | 0.14069 | -
 
 ## History
 
@@ -115,9 +121,6 @@ View the [changelog](https://github.com/ankane/quirk/blob/master/CHANGELOG.md)
 - Geo features
 - Name and address features
 - Hyper-parameter tuning
-- Customizable loss function
-  - RMSLE
-  - Multi-class logarithmic loss
 
 ## Contributing
 
