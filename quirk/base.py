@@ -67,6 +67,9 @@ class Base(object):
         self._show_pairwise_correlation()
         self._show_features()
 
+    def analyze_column(self, name):
+        self._generate_features(cols=[name])
+
     def model(self):
         if 'xgb' not in globals():
             raise ValueError('XGBoost not installed')
@@ -177,7 +180,7 @@ class Base(object):
     # collect info
     # generate features
     # display features
-    def _generate_features(self, viz=True):
+    def _generate_features(self, viz=True, cols=None):
         target_col = self._target_col
 
         self._train_features_df = pd.DataFrame()
@@ -186,6 +189,9 @@ class Base(object):
 
         for name, col in self._train_df.iteritems():
             if name == target_col:
+                continue
+
+            if cols != None and not name in cols:
                 continue
 
             info = self._col_info(col)
@@ -236,7 +242,8 @@ class Base(object):
                     self._plot_category(col.name + '_hour')
                     self._plot_category(col.name + '_weekday')
 
-        self._show_geo()
+        if cols == None:
+            self._show_geo()
 
     @staticmethod
     def _show_pct(message, num, denom):
@@ -292,7 +299,7 @@ class Base(object):
         if col.dtype == 'datetime64[ns]':
             column_type = 'time'
         elif unique_count / float(total_count) > 0.95:
-            if col.dtype == 'object' and col.dropna().head(10).apply(lambda x: len(x)).mean() > 100:
+            if col.dtype == 'object' and col.dropna().head(10).apply(lambda x: len(x)).mean() > 50:
                 column_type = 'text'
             else:
                 column_type = 'unique'
