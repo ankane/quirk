@@ -238,7 +238,7 @@ class Base(object):
                     self._plot_category(col.name + '_hour')
                     self._plot_category(col.name + '_weekday')
 
-        if cols is None:
+        if viz and cols is None:
             self._show_geo()
 
     @staticmethod
