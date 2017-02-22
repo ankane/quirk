@@ -54,6 +54,8 @@ class Base(object):
         self._train_features_df = None
         self._test_features_df = None
 
+        self.column_types = {}
+
         if self._is_interactive():
             self._screen = Notebook()
         else:
@@ -191,6 +193,8 @@ class Base(object):
             null_count = info['null_count']
             column_type = info['column_type']
 
+            self.column_types[name] = column_type
+
             if viz:
                 self._subheader(col.name)
 
@@ -218,6 +222,9 @@ class Base(object):
                     self._test_features_df[
                         col.name + '_weekday'] = \
                         self._test_df[col.name].dt.weekday
+            elif column_type == 'text':
+                # TODO stuff
+                pass
 
             # visualize
             if viz:
@@ -285,7 +292,10 @@ class Base(object):
         if col.dtype == 'datetime64[ns]':
             column_type = 'time'
         elif unique_count / float(total_count) > 0.95:
-            column_type = 'unique'
+            if col.dropna().head(10).apply(lambda x: len(x)).mean() > 100:
+                column_type = 'text'
+            else:
+                column_type = 'unique'
         elif col.name.endswith('id') or unique_count <= 20:
             column_type = 'category'
         elif numeric:
