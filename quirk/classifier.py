@@ -29,7 +29,6 @@ class Classifier(Base):
         self._plot(sns.boxplot(y=name, x=self._target_col,
                                data=data))
 
-
     def _build_models(self, dev_x, dev_y, val_x):
         predictions = OrderedDict()
         mode = dev_y.value_counts().index[0]
