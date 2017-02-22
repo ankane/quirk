@@ -292,7 +292,7 @@ class Base(object):
         if col.dtype == 'datetime64[ns]':
             column_type = 'time'
         elif unique_count / float(total_count) > 0.95:
-            if col.dropna().head(10).apply(lambda x: len(x)).mean() > 100:
+            if col.dtype == 'object' and col.dropna().head(10).apply(lambda x: len(x)).mean() > 100:
                 column_type = 'text'
             else:
                 column_type = 'unique'
