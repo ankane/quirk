@@ -29,18 +29,22 @@ class Classifier(Base):
         self._plot(sns.boxplot(y=name, x=self._target_col,
                                data=data))
 
-    def _build_models(self, dev_x, dev_y, val_x):
+    def _build_models(self, train_x, train_y, test_x, test_y):
         predictions = OrderedDict()
-        mode = dev_y.value_counts().index[0]
-        predictions['Mode'] = pd.Series([mode] * len(val_x))
-        predictions['XGBoost'] = self._xgboost_predict(dev_x, dev_y, val_x)
+        mode = train_y.value_counts().index[0]
+        predictions['Mode'] = pd.Series([mode] * len(test_x))
+        predictions['XGBoost'] = self._xgboost_predict(train_x, train_y, test_x, test_y)
         return predictions
 
-    def _xgboost_predict(self, dev_x, dev_y, val_x):
+    def _xgboost_predict(self, train_x, train_y, test_x, test_y):
         model = xgb.XGBClassifier(seed=2016)
-        model.fit(dev_x, dev_y)
+        if test_y is None:
+            eval_set = []
+        else:
+            eval_set = [(train_x, train_y), (test_x, test_y)]
+        model.fit(train_x, train_y, eval_set=eval_set)
         self._xgboost_model = model # hack
-        return model.predict(val_x)
+        return model.predict(test_x)
 
     @staticmethod
     def _score(act, pred):

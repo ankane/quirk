@@ -24,7 +24,7 @@ class Base(object):
     __metaclass__ = ABCMeta
 
     def __init__(self, train_data=None, test_data=None, target_col=None,
-                 id_col=None, datetime_cols=None):
+                 id_col=None, datetime_cols=None, eval_metric=None):
 
         train_df = self._fetch_data(train_data)
         test_df = self._fetch_data(test_data)
@@ -50,6 +50,7 @@ class Base(object):
         self._test_df = test_df
         self._target_col = target_col
         self._id_col = id_col
+        self._eval_metric = eval_metric
 
         self._train_features_df = None
         self._test_features_df = None
@@ -99,7 +100,7 @@ class Base(object):
             train_model_df, y, test_size=0.33, random_state=2016)
 
         # benchmark models
-        predictions = self._build_models(dev_x, dev_y, val_x)
+        predictions = self._build_models(dev_x, dev_y, val_x, val_y)
 
         # score models
         scores = OrderedDict()
@@ -124,7 +125,7 @@ class Base(object):
         self._header('Test Predictions')
 
         # retrain model on all data
-        preds = self._xgboost_predict(train_x, train_y, test_x)
+        preds = self._xgboost_predict(train_x, train_y, test_x, None)
 
         out_df = pd.DataFrame()
         out_df[self._id_col] = self._test_df[self._id_col].values
@@ -237,7 +238,7 @@ class Base(object):
                     self._plot_category(col.name + '_hour')
                     self._plot_category(col.name + '_weekday')
 
-        if cols == None:
+        if cols is None:
             self._show_geo()
 
     @staticmethod
@@ -356,13 +357,13 @@ class Base(object):
         pass
 
     @abstractmethod
-    def _xgboost_predict(self, dev_x, dev_y, val_x):
+    def _xgboost_predict(self, train_x, train_y, test_x, test_y):
         pass
 
     @abstractmethod
-    def _build_models(self, dev_x, dev_y, val_x):
+    def _build_models(self, train_x, train_y, test_x, test_y):
         pass
 
     @abstractmethod
-    def _score(act, pred):
+    def _score(self, act, pred):
         pass

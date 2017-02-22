@@ -3,6 +3,7 @@ from collections import OrderedDict
 import pandas as pd
 import seaborn as sns
 from sklearn.metrics import mean_squared_error
+from numpy import log1p
 
 try:
     import xgboost as xgb
@@ -28,19 +29,25 @@ class Regressor(Base):
         self._plot(sns.regplot(x=name, y=self._target_col,
                                data=data))
 
-    def _build_models(self, dev_x, dev_y, val_x):
+    def _build_models(self, train_x, train_y, test_x, test_y):
         predictions = OrderedDict()
-        predictions['Mean'] = pd.Series([dev_y.mean()] * len(val_x))
-        predictions['Median'] = pd.Series([dev_y.median()] * len(val_x))
-        predictions['XGBoost'] = self._xgboost_predict(dev_x, dev_y, val_x)
+        predictions['Mean'] = pd.Series([train_y.mean()] * len(test_x))
+        predictions['Median'] = pd.Series([train_y.median()] * len(test_x))
+        predictions['XGBoost'] = self._xgboost_predict(train_x, train_y, test_x, test_y)
         return predictions
 
-    def _xgboost_predict(self, dev_x, dev_y, val_x):
+    def _xgboost_predict(self, train_x, train_y, test_x, test_y):
         model = xgb.XGBRegressor(seed=2016)
-        model.fit(dev_x, dev_y)
+        if test_y is None:
+            eval_set = []
+        else:
+            eval_set = [(train_x, train_y), (test_x, test_y)]
+        model.fit(train_x, train_y, eval_set=eval_set) #, eval_metric=self._score)
         self._xgboost_model = model # hack
-        return model.predict(val_x)
+        return model.predict(test_x)
 
-    @staticmethod
-    def _score(act, pred):
-        return sqrt(mean_squared_error(act, pred))
+    def _score(self, act, pred):
+        if self._eval_metric == 'rmsle':
+            return sqrt(mean_squared_error(log1p(act), log1p(pred)))
+        else:
+            return sqrt(mean_squared_error(act, pred))
