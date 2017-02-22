@@ -32,7 +32,12 @@ class Classifier(Base):
     def _build_models(self, train_x, train_y, test_x, test_y):
         predictions = OrderedDict()
 
-        if self._eval_metric != 'mlogloss':
+        if self._eval_metric == 'mlogloss':
+            counts = pd.Series(train_y).value_counts()
+            prob = counts.apply(lambda x: x / float(counts.sum()))
+            row = [prob[k] for k in range(len(self._classes))]
+            predictions['Mean'] = pd.DataFrame([row for x in range(len(test_x))])
+        else:
             mode = train_y.value_counts().index[0]
             predictions['Mode'] = pd.Series([mode] * len(test_x))
 
