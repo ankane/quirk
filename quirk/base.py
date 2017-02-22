@@ -298,6 +298,7 @@ class Base(object):
             unique_count = len(col.apply(tuple).unique())
 
         if col.dtype == 'object':
+            # TODO distinguish betewen blank and missing
             null_count = col.apply(lambda x: len(x or '') == 0).sum()
         else:
             null_count = col.isnull().sum()
