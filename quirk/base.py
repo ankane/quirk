@@ -91,10 +91,15 @@ class Base(object):
         # TODO one hot encoding for linear regression
         for f in train_model_df.columns:
             if train_model_df[f].dtype == 'object':
-                lbl = preprocessing.LabelEncoder()
-                train_model_df[f] = lbl.fit_transform(train_model_df[f].fillna('?'))
+                le = preprocessing.LabelEncoder()
+                train_model_df[f] = le.fit_transform(train_model_df[f].fillna('?'))
                 if self._test_df is not None:
-                    test_model_df[f] = lbl.fit_transform(test_model_df[f].fillna('?'))
+                    test_model_df[f] = le.fit_transform(test_model_df[f].fillna('?'))
+
+        if self._eval_metric == 'mlogloss':
+            le = preprocessing.LabelEncoder()
+            y = le.fit_transform(y)
+            self._classes = le.classes_
 
         dev_x, val_x, dev_y, val_y = model_selection.train_test_split(
             train_model_df, y, test_size=0.33, random_state=2016)
@@ -129,7 +134,12 @@ class Base(object):
 
         out_df = pd.DataFrame()
         out_df[self._id_col] = self._test_df[self._id_col].values
-        out_df[self._target_col] = preds
+
+        if self._eval_metric == 'mlogloss':
+            for i, label in enumerate(self._classes):
+                out_df[label] = preds[:, i]
+        else:
+            out_df[self._target_col] = preds
 
         filename = 'results.csv'
         out_df.to_csv(filename, index=False)
