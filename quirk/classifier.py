@@ -1,7 +1,7 @@
 from collections import OrderedDict
 import pandas as pd
 import seaborn as sns
-from sklearn.metrics import accuracy_score, log_loss
+from sklearn.metrics import accuracy_score, log_loss, roc_auc_score
 
 try:
     import xgboost as xgb
@@ -65,12 +65,14 @@ class Classifier(Base):
             else:
                 eval_set = [(train_x, train_y), (test_x, test_y)]
             model = xgb.XGBClassifier(seed=self._seed)
-            model.fit(train_x, train_y, eval_set=eval_set)
+            model.fit(train_x, train_y, eval_set=eval_set, eval_metric=(self._eval_metric or 'error'))
             self._xgboost_model = model # hack
             return model.predict(test_x)
 
     def _score(self, act, pred):
         if self._eval_metric == 'mlogloss':
             return log_loss(act, pred)
+        elif self._eval_metric == 'auc':
+            return roc_auc_score(act, pred)
         else:
             return accuracy_score(act, pred)

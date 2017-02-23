@@ -241,8 +241,9 @@ class Base(object):
                         col.name + '_weekday'] = \
                         self._test_df[col.name].dt.weekday
             elif column_type == 'text':
-                # TODO stuff
-                pass
+                # TODO more
+                self._train_features_df[col.name + '_words'] = self._word_count(col)
+                self._test_features_df[col.name + '_words'] = self._word_count(col)
 
             # visualize
             if viz:
@@ -297,7 +298,10 @@ class Base(object):
         return self._train_df[self._target_col]
 
     @staticmethod
-    def _col_info(col):
+    def _word_count(col):
+        return col.apply(lambda x: len((x or '').split(' ')))
+
+    def _col_info(self, col):
         total_count = len(col)
 
         average_words = None
@@ -305,7 +309,7 @@ class Base(object):
             unique_count = len(col.unique())
             if col.dtype == 'object':
                 try:
-                    word_count = col.apply(lambda x: len((x or '').split(' ')))
+                    word_count = self._word_count(col)
                     average_words = word_count.where(word_count > 0).mean()
                 except AttributeError:
                     pass
