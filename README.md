@@ -82,6 +82,7 @@ Quirk has support for a number of eval metrics.
 Classification
 
 - `accuracy` - # correct / total (default)
+- `auc` - area under the ROC curve
 - `mlogloss` - multi class log loss
 
 Regression
