@@ -74,6 +74,7 @@ class Base(object):
 
     def model(self):
         if 'xgb' not in globals():
+            # TODO better error type
             raise ValueError('XGBoost not installed')
 
         self._header('Model')
@@ -83,6 +84,10 @@ class Base(object):
 
         if self._train_features_df is None:
             self._generate_features(viz=False)
+
+        if len(self._train_features_df.columns) < 2:
+            # TODO better error type
+            raise ValueError('No features')
 
         train_model_df = self._train_features_df.drop(target_col, axis=1)
         test_model_df = self._test_features_df.copy()
