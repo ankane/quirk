@@ -1,14 +1,14 @@
 # Quirk
 
-:boom: Your data science sidekick
+Build powerful predictive models with a few lines of code
 
-With a few lines of code, do:
+[See a demo](https://github.com/ankane/quirk/blob/demos/demos/Titanic.ipynb)
+
+Quirk does:
 
 - exploratory data analysis
 - feature engineering
 - predictive modeling
-
-[See a demo](https://github.com/ankane/quirk/blob/demos/demos/Titanic.ipynb)
 
 ## Installation
 

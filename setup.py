@@ -3,7 +3,7 @@ from setuptools import setup
 setup(
     name='quirk',
     version='0.1.1',
-    description='Your data science sidekick',
+    description='Build powerful predictive models with a few lines of code',
     url='https://github.com/ankane/quirk',
     author='Andrew Kane',
     author_email='andrew@chartkick.com',
