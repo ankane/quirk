@@ -9,6 +9,7 @@ import seaborn as sns
 
 # model
 from sklearn import model_selection, preprocessing
+from sklearn.feature_extraction.text import CountVectorizer
 
 try:
     import xgboost as xgb
@@ -241,9 +242,24 @@ class Base(object):
                         col.name + '_weekday'] = \
                         self._test_df[col.name].dt.weekday
             elif column_type == 'text':
-                # TODO more
                 self._train_features_df[col.name + '_words'] = self._word_count(col)
                 self._test_features_df[col.name + '_words'] = self._word_count(col)
+
+                vectorizer = CountVectorizer(analyzer = "word",
+                                             tokenizer = None,
+                                             preprocessor = None,
+                                             stop_words = None,
+                                             max_features = 5000)
+
+                train_features = vectorizer.fit_transform(col)
+                cols = [col.name + '_word_' + x for x in vectorizer.get_feature_names()]
+                arr = pd.DataFrame(train_features.toarray(), columns=cols)
+                self._train_features_df = pd.concat([self._train_features_df, arr], axis=1)
+
+                if self._test_df is not None:
+                    test_features = vectorizer.transform(self._test_df[col.name])
+                    arr = pd.DataFrame(test_features.toarray(), columns=cols)
+                    self._test_features_df = pd.concat([self._test_features_df, arr], axis=1)
 
             # visualize
             if viz:
