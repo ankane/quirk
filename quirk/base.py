@@ -118,10 +118,9 @@ class Base(object):
                 #     test_model_df[f] = le.fit_transform(test_model_df[f].fillna(default_value))
 
         if self._eval_metric == 'mlogloss':
-            # le = preprocessing.LabelEncoder()
-            # y = le.fit_transform(y)
-            # self._classes = le.classes_
-            self._classes = categories
+            le = preprocessing.LabelEncoder()
+            y = le.fit_transform(y)
+            self._classes = le.classes_
 
         dev_x, val_x, dev_y, val_y = model_selection.train_test_split(
             train_model_df, y, test_size=0.33, random_state=self._seed)
