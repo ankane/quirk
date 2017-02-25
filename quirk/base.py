@@ -98,10 +98,11 @@ class Base(object):
         # TODO one hot encoding for linear regression
         for f in train_model_df.columns:
             if train_model_df[f].dtype == 'object':
+                default_value = self._mode(train_model_df[f])
                 le = preprocessing.LabelEncoder()
-                train_model_df[f] = le.fit_transform(train_model_df[f].fillna('?'))
+                train_model_df[f] = le.fit_transform(train_model_df[f].fillna(default_value))
                 if self._test_df is not None:
-                    test_model_df[f] = le.fit_transform(test_model_df[f].fillna('?'))
+                    test_model_df[f] = le.fit_transform(test_model_df[f].fillna(default_value))
 
         if self._eval_metric == 'mlogloss':
             le = preprocessing.LabelEncoder()
@@ -356,6 +357,10 @@ class Base(object):
 
         return {'total_count': total_count, 'unique_count': unique_count,
                 'null_count': null_count, 'column_type': column_type}
+
+    @staticmethod
+    def _mode(col):
+        return col.value_counts().index[0]
 
     # test interactive
 

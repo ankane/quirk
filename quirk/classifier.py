@@ -38,7 +38,7 @@ class Classifier(Base):
             row = [prob[k] for k in range(len(self._classes))]
             predictions['Mean'] = pd.DataFrame([row for x in range(len(test_x))])
         else:
-            mode = train_y.value_counts().index[0]
+            mode = self._mode(train_y)
             predictions['Mode'] = pd.Series([mode] * len(test_x))
 
         predictions['XGBoost'] = self._xgboost_predict(train_x, train_y, test_x, test_y)
