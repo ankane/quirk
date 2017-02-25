@@ -4,6 +4,13 @@ import seaborn as sns
 from sklearn.metrics import accuracy_score, log_loss, roc_auc_score
 
 try:
+    from keras.models import Sequential
+    from keras.layers import Dense, Dropout, Activation
+    from keras.utils import np_utils
+except ImportError:
+    pass
+
+try:
     import xgboost as xgb
 except ImportError:
     pass
@@ -41,8 +48,34 @@ class Classifier(Base):
             mode = self._mode(train_y)
             predictions['Mode'] = pd.Series([mode] * len(test_x))
 
+        if self._eval_metric != 'mlogloss' and 'Sequential' in globals():
+            predictions['Keras'] = self._keras_predict(train_x, train_y, test_x, test_y)
+            print(predictions['Keras'])
+
         predictions['XGBoost'] = self._xgboost_predict(train_x, train_y, test_x, test_y)
+
         return predictions
+
+    def _keras_predict(self, train_x, train_y, test_x, test_y):
+        # https://github.com/fchollet/keras/blob/master/examples/reuters_mlp.py
+        model = Sequential()
+        model.add(Dense(32, input_dim=train_x.shape[1]))
+        model.add(Activation('relu'))
+        model.add(Dropout(0.5))
+        model.add(Dense(2))
+        model.add(Activation('softmax'))
+
+        model.compile(loss='categorical_crossentropy',
+                      optimizer='adam',
+                      metrics=['accuracy'])
+
+        y = np_utils.to_categorical(train_y)
+
+        history = model.fit(train_x.values, y,
+                            nb_epoch=5, batch_size=50,
+                            verbose=1, validation_split=0.1)
+
+        return model.predict_classes(test_x.values)
 
     def _xgboost_predict(self, train_x, train_y, test_x, test_y):
         if self._eval_metric == 'mlogloss':
