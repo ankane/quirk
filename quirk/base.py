@@ -261,8 +261,8 @@ class Base(object):
                         col.name + '_weekday'] = \
                         self._test_df[col.name].dt.weekday
             elif column_type == 'text':
-                self._train_features_df[col.name + '_words'] = self._word_count(col)
-                self._test_features_df[col.name + '_words'] = self._word_count(col)
+                self._train_features_df[col.name + '_num_words'] = self._word_count(col)
+                self._test_features_df[col.name + '_num_words'] = self._word_count(col)
 
                 # might take a while
                 self._paragraph('Processing ' + col.name + '...')
