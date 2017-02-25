@@ -56,7 +56,13 @@ class Classifier(Base):
             dtrain = xgb.DMatrix(data=train_x, label=train_y)
             dtest = xgb.DMatrix(data=test_x)
 
-            model = xgb.train(params, dtrain, 100, verbose_eval=25)
+            if test_y is None:
+                watchlist = []
+            else:
+                wtest = xgb.DMatrix(data=test_x, label=test_y)
+                watchlist = [(dtrain, 'train'), (wtest, 'test')]
+
+            model = xgb.train(params, dtrain, 100, watchlist, verbose_eval=10)
             self._xgboost_model = model # hack
             return model.predict(dtest)
         else:
