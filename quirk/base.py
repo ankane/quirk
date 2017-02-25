@@ -127,7 +127,7 @@ class Base(object):
         # show xgboost info
         self._subheader('XGBoost')
         self._paragraph('Score: %f' % scores['XGBoost'])
-        self._plot(xgb.plot_importance(self._xgboost_model))
+        self._plot(xgb.plot_importance(self._xgboost_model, max_num_features=20))
 
         # save data
         if self._test_df is not None:
@@ -245,10 +245,10 @@ class Base(object):
                 self._train_features_df[col.name + '_words'] = self._word_count(col)
                 self._test_features_df[col.name + '_words'] = self._word_count(col)
 
-                vectorizer = CountVectorizer(analyzer = "word",
-                                             tokenizer = None,
-                                             preprocessor = None,
-                                             stop_words = None,
+                vectorizer = CountVectorizer(analyzer = 'word',
+                                             # tokenizer = None,
+                                             # preprocessor = None,
+                                             stop_words = 'english',
                                              max_features = 5000)
 
                 train_features = vectorizer.fit_transform(col)
