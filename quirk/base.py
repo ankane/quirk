@@ -94,20 +94,34 @@ class Base(object):
         test_model_df = self._test_features_df.copy()
         y = self._y()
 
-        # make numeric
-        # TODO one hot encoding for linear regression
-        for f in train_model_df.columns:
-            if train_model_df[f].dtype == 'object':
-                default_value = self._mode(train_model_df[f])
-                le = preprocessing.LabelEncoder()
-                train_model_df[f] = le.fit_transform(train_model_df[f].fillna(default_value))
+        # dummy vars
+        for f in train_model_df:
+            col = train_model_df[f]
+
+            if col.dtype == 'object':
+                default_value = self._mode(col)
+
+                train_col = col.fillna(default_value)
+                test_col = [] if self._test_df is None else self._test_df[col.name].fillna(default_value)
+
+                categories = np.union1d(train_col, test_col)
+                train_dummies = pd.get_dummies(train_col.astype('category', categories=categories), prefix=col.name)
+                train_model_df = pd.concat([train_model_df.drop(col.name, axis=1), train_dummies], axis=1)
+
                 if self._test_df is not None:
-                    test_model_df[f] = le.fit_transform(test_model_df[f].fillna(default_value))
+                    test_dummies = pd.get_dummies(test_col.astype('category', categories=categories), prefix=col.name)
+                    test_model_df = pd.concat([test_model_df.drop(col.name, axis=1), test_dummies], axis=1)
+
+                # le = preprocessing.LabelEncoder()
+                # train_model_df[f] = le.fit_transform(train_model_df[f].fillna(default_value))
+                # if self._test_df is not None:
+                #     test_model_df[f] = le.fit_transform(test_model_df[f].fillna(default_value))
 
         if self._eval_metric == 'mlogloss':
-            le = preprocessing.LabelEncoder()
-            y = le.fit_transform(y)
-            self._classes = le.classes_
+            # le = preprocessing.LabelEncoder()
+            # y = le.fit_transform(y)
+            # self._classes = le.classes_
+            self._classes = categories
 
         dev_x, val_x, dev_y, val_y = model_selection.train_test_split(
             train_model_df, y, test_size=0.33, random_state=self._seed)
