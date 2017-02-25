@@ -254,15 +254,21 @@ class Base(object):
             elif column_type == 'time':
                 self._train_features_df[col.name + '_hour'] = col.dt.hour
                 self._train_features_df[col.name + '_weekday'] = col.dt.weekday
+                self._train_features_df[col.name + '_week'] = col.apply(lambda x: x.isocalendar()[1])
+                self._train_features_df[col.name + '_month'] = col.dt.month
+                self._train_features_df[col.name + '_year'] = col.dt.year
                 if self._test_df is not None:
-                    self._test_features_df[
-                        col.name + '_hour'] = self._test_df[col.name].dt.hour
-                    self._test_features_df[
-                        col.name + '_weekday'] = \
-                        self._test_df[col.name].dt.weekday
+                    self._test_features_df[col.name + '_hour'] = self._test_df[col.name].dt.hour
+                    self._test_features_df[col.name + '_weekday'] = self._test_df[col.name].dt.weekday
+                    self._test_features_df[col.name + '_week'] = self._test_df[col.name].apply(lambda x: x.isocalendar()[1])
+                    self._test_features_df[col.name + '_month'] = self._test_df[col.name].dt.month
+                    self._test_features_df[col.name + '_year'] = self._test_df[col.name].dt.year
+
             elif column_type == 'text':
                 self._train_features_df[col.name + '_num_words'] = self._word_count(col)
                 self._test_features_df[col.name + '_num_words'] = self._word_count(col)
+
+                continue
 
                 # might take a while
                 self._paragraph('Processing ' + col.name + '...')
@@ -281,6 +287,10 @@ class Base(object):
                     test_features = vectorizer.transform(self._test_df[col.name])
                     arr = pd.DataFrame(test_features.toarray(), columns=cols2).set_index(self._test_features_df.index)
                     self._test_features_df = pd.concat([self._test_features_df, arr], axis=1)
+            elif column_type == 'list':
+                self._train_features_df[col.name + '_count'] = col.apply(len)
+                if self._test_df is not None:
+                    self._test_features_df[col.name + '_count'] = self._test_df[col.name].apply(len)
 
             # visualize
             if viz:
@@ -291,6 +301,9 @@ class Base(object):
                 elif column_type == 'time':
                     self._plot_category(col.name + '_hour')
                     self._plot_category(col.name + '_weekday')
+                    self._plot_category(col.name + '_week')
+                    self._plot_category(col.name + '_month')
+                    self._plot_category(col.name + '_year')
 
         if cols is None:
             self._process_geo(viz=viz)
@@ -372,6 +385,8 @@ class Base(object):
         numeric = col.dtype == 'int64' or col.dtype == 'float64'
         if col.dtype == 'datetime64[ns]':
             column_type = 'time'
+        elif col.dtype == 'object' and type(col.values[0]) is list:
+            column_type = 'list'
         elif average_words != None and average_words > 10:
             column_type = 'text'
         elif unique_count / float(total_count) > 0.95:
