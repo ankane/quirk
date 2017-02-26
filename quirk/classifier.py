@@ -45,41 +45,21 @@ class Classifier(Base):
         return predictions
 
     def _xgboost_predict(self, train_x, train_y, test_x, test_y):
-        if self._eval_metric == 'mlogloss':
-            params = {
-                'seed': self._seed,
-                'objective': 'multi:softprob',
-                'eval_metric': 'mlogloss',
-                'num_class': len(self._classes)
-            }
+        model = xgb.XGBClassifier(seed=self._seed, n_estimators=100, max_depth=6, learning_rate=0.3)
+        eval_metric = self._eval_metric or 'error'
 
-            dtrain = xgb.DMatrix(data=train_x, label=train_y)
-            dtest = xgb.DMatrix(data=test_x)
-
-            num_rounds = 300
-
-            if test_y is None:
-                watchlist = []
-                model = xgb.train(params, dtrain, num_rounds)
-            else:
-                wtest = xgb.DMatrix(data=test_x, label=test_y)
-                watchlist = [(dtrain, 'train'), (wtest, 'test')]
-                evals_result = {}
-                model = xgb.train(params, dtrain, num_rounds, watchlist, verbose_eval=10,
-                                  evals_result=evals_result, early_stopping_rounds=25)
-                self._evals_result = evals_result
-
-            self._xgboost_model = model # hack
-
-            return model.predict(dtest)
+        if test_y is None:
+            model.fit(train_x, train_y, eval_metric=eval_metric, verbose=10)
         else:
-            if test_y is None:
-                eval_set = []
-            else:
-                eval_set = [(train_x, train_y), (test_x, test_y)]
-            model = xgb.XGBClassifier(seed=self._seed)
-            model.fit(train_x, train_y, eval_set=eval_set, eval_metric=(self._eval_metric or 'error'))
-            self._xgboost_model = model # hack
+            eval_set = [(train_x, train_y), (test_x, test_y)]
+            model.fit(train_x, train_y, eval_set=eval_set, eval_metric=eval_metric,
+                      early_stopping_rounds=25, verbose=10)
+
+        self._xgboost_model = model # hack
+
+        if self._eval_metric == 'mlogloss':
+            return model.predict_proba(test_x)
+        else:
             return model.predict(test_x)
 
     def _score(self, act, pred):
