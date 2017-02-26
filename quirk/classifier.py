@@ -51,11 +51,11 @@ class Classifier(Base):
         eval_metric = self._eval_metric or 'error'
 
         if test_y is None:
-            model.fit(train_x, train_y, verbose=10)
+            model.fit(train_x, train_y, eval_metric=eval_metric, verbose=10)
         else:
             eval_set = [(train_x, train_y), (test_x, test_y)]
             model.fit(train_x, train_y, eval_set=eval_set, eval_metric=eval_metric,
-                      early_stopping_rounds=50, verbose=10)
+                      early_stopping_rounds=25, verbose=10)
 
         if self._eval_metric == 'mlogloss':
             return model.predict_proba(test_x)
