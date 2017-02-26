@@ -127,6 +127,7 @@ class Base(object):
             y = le.fit_transform(y)
             self._classes = le.classes_
 
+        # tried stratify=y, but produced worse results
         dev_x, val_x, dev_y, val_y = model_selection.train_test_split(
             train_model_df, y, test_size=0.33, random_state=self._seed)
 
