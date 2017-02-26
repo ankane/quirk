@@ -274,24 +274,13 @@ class Base(object):
                 # might take a while
                 self._paragraph('Processing ' + col.name + '...')
 
-                max_features = 100
-                vectorizer = CountVectorizer(analyzer='word',
-                                             stop_words='english',
-                                             max_features=max_features)
-
-                train_features = vectorizer.fit_transform(col)
-                cols2 = [col.name + '_word_' + x for x in vectorizer.get_feature_names()]
-                arr = pd.DataFrame(train_features.toarray(), columns=cols2).set_index(self._train_features_df.index)
-                self._train_features_df = pd.concat([self._train_features_df, arr], axis=1)
-
-                if self._test_df is not None:
-                    test_features = vectorizer.transform(self._test_df[col.name])
-                    arr = pd.DataFrame(test_features.toarray(), columns=cols2).set_index(self._test_features_df.index)
-                    self._test_features_df = pd.concat([self._test_features_df, arr], axis=1)
+                self._bag_of_words(col, max_features=100)
             elif column_type == 'list':
                 self._train_features_df[col.name + '_count'] = col.apply(len)
                 if self._test_df is not None:
                     self._test_features_df[col.name + '_count'] = self._test_df[col.name].apply(len)
+
+                self._bag_of_words(col, max_features=20, transform=lambda x: " ".join(x))
 
             # visualize
             if viz:
@@ -308,6 +297,29 @@ class Base(object):
 
         if cols is None:
             self._process_geo(viz=viz)
+
+    def _bag_of_words(self, col, max_features=100, transform=None):
+        vectorizer = CountVectorizer(analyzer='word',
+                                     stop_words='english',
+                                     max_features=max_features)
+
+        train_col = col
+        if transform is not None:
+            train_col = train_col.apply(transform)
+
+        train_features = vectorizer.fit_transform(train_col)
+        cols2 = [col.name + '_word_' + x for x in vectorizer.get_feature_names()]
+        arr = pd.DataFrame(train_features.toarray(), columns=cols2).set_index(self._train_features_df.index)
+        self._train_features_df = pd.concat([self._train_features_df, arr], axis=1)
+
+        if self._test_df is not None:
+            test_col = test_col.apply(transform)
+            if transform is not None:
+                train_col = train_col.apply(transform)
+
+            test_features = vectorizer.transform(test_col)
+            arr = pd.DataFrame(test_features.toarray(), columns=cols2).set_index(self._test_features_df.index)
+            self._test_features_df = pd.concat([self._test_features_df, arr], axis=1)
 
     @staticmethod
     def _show_pct(message, num, denom):
