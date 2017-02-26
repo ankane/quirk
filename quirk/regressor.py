@@ -37,13 +37,16 @@ class Regressor(Base):
         return predictions
 
     def _xgboost_predict(self, train_x, train_y, test_x, test_y):
-        model = xgb.XGBRegressor(seed=self._seed)
+        model = xgb.XGBRegressor(seed=self._seed, n_estimators=300, max_depth=3, learning_rate=0.1)
+        self._xgboost_model = model # hack
+
         if test_y is None:
-            eval_set = []
+            model.fit(train_x, train_y, verbose=10)
         else:
             eval_set = [(train_x, train_y), (test_x, test_y)]
-        model.fit(train_x, train_y, eval_set=eval_set) #, eval_metric=self._score)
-        self._xgboost_model = model # hack
+            model.fit(train_x, train_y, eval_set=eval_set,
+                      early_stopping_rounds=25, verbose=10)
+
         return model.predict(test_x)
 
     def _score(self, act, pred):

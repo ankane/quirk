@@ -12,6 +12,11 @@ from sklearn import model_selection, preprocessing
 from sklearn.feature_extraction.text import CountVectorizer
 
 try:
+    import Geohash
+except ImportError:
+    pass
+
+try:
     import xgboost as xgb
 except ImportError:
     pass
@@ -101,27 +106,28 @@ class Base(object):
             if col.dtype == 'object':
                 default_value = self._mode(col)
 
-                train_col = col.fillna(default_value)
-                test_col = [] if self._test_df is None else self._test_df[col.name].fillna(default_value)
+                # train_col = col.fillna(default_value)
+                # test_col = [] if self._test_df is None else self._test_df[col.name].fillna(default_value)
 
-                categories = np.union1d(train_col, test_col)
-                train_dummies = pd.get_dummies(train_col.astype('category', categories=categories), prefix=col.name)
-                train_model_df = pd.concat([train_model_df.drop(col.name, axis=1), train_dummies], axis=1)
+                # categories = np.union1d(train_col, test_col)
+                # train_dummies = pd.get_dummies(train_col.astype('category', categories=categories), prefix=col.name)
+                # train_model_df = pd.concat([train_model_df.drop(col.name, axis=1), train_dummies], axis=1)
 
-                if self._test_df is not None:
-                    test_dummies = pd.get_dummies(test_col.astype('category', categories=categories), prefix=col.name)
-                    test_model_df = pd.concat([test_model_df.drop(col.name, axis=1), test_dummies], axis=1)
-
-                # le = preprocessing.LabelEncoder()
-                # train_model_df[f] = le.fit_transform(train_model_df[f].fillna(default_value))
                 # if self._test_df is not None:
-                #     test_model_df[f] = le.fit_transform(test_model_df[f].fillna(default_value))
+                #     test_dummies = pd.get_dummies(test_col.astype('category', categories=categories), prefix=col.name)
+                #     test_model_df = pd.concat([test_model_df.drop(col.name, axis=1), test_dummies], axis=1)
+
+                le = preprocessing.LabelEncoder()
+                train_model_df[f] = le.fit_transform(train_model_df[f].fillna(default_value))
+                if self._test_df is not None:
+                    test_model_df[f] = le.fit_transform(test_model_df[f].fillna(default_value))
 
         if self._eval_metric == 'mlogloss':
             le = preprocessing.LabelEncoder()
             y = le.fit_transform(y)
             self._classes = le.classes_
 
+        # tried stratify=y, but produced worse results
         dev_x, val_x, dev_y, val_y = model_selection.train_test_split(
             train_model_df, y, test_size=0.33, random_state=self._seed)
 
@@ -249,31 +255,32 @@ class Base(object):
             elif column_type == 'time':
                 self._train_features_df[col.name + '_hour'] = col.dt.hour
                 self._train_features_df[col.name + '_weekday'] = col.dt.weekday
+                self._train_features_df[col.name + '_week'] = col.apply(lambda x: x.isocalendar()[1])
+                self._train_features_df[col.name + '_month'] = col.dt.month
+                self._train_features_df[col.name + '_year'] = col.dt.year
                 if self._test_df is not None:
-                    self._test_features_df[
-                        col.name + '_hour'] = self._test_df[col.name].dt.hour
-                    self._test_features_df[
-                        col.name + '_weekday'] = \
-                        self._test_df[col.name].dt.weekday
+                    self._test_features_df[col.name + '_hour'] = self._test_df[col.name].dt.hour
+                    self._test_features_df[col.name + '_weekday'] = self._test_df[col.name].dt.weekday
+                    self._test_features_df[col.name + '_week'] = self._test_df[col.name].apply(lambda x: x.isocalendar()[1])
+                    self._test_features_df[col.name + '_month'] = self._test_df[col.name].dt.month
+                    self._test_features_df[col.name + '_year'] = self._test_df[col.name].dt.year
+
             elif column_type == 'text':
-                self._train_features_df[col.name + '_words'] = self._word_count(col)
-                self._test_features_df[col.name + '_words'] = self._word_count(col)
+                self._train_features_df[col.name + '_num_words'] = self._word_count(col)
+                self._test_features_df[col.name + '_num_words'] = self._word_count(col)
 
-                vectorizer = CountVectorizer(analyzer = 'word',
-                                             # tokenizer = None,
-                                             # preprocessor = None,
-                                             stop_words = 'english',
-                                             max_features = 5000)
+                continue
 
-                train_features = vectorizer.fit_transform(col)
-                cols = [col.name + '_word_' + x for x in vectorizer.get_feature_names()]
-                arr = pd.DataFrame(train_features.toarray(), columns=cols)
-                self._train_features_df = pd.concat([self._train_features_df, arr], axis=1)
+                # might take a while
+                self._paragraph('Processing ' + col.name + '...')
 
+                self._bag_of_words(col, max_features=100)
+            elif column_type == 'list':
+                self._train_features_df[col.name + '_count'] = col.apply(len)
                 if self._test_df is not None:
-                    test_features = vectorizer.transform(self._test_df[col.name])
-                    arr = pd.DataFrame(test_features.toarray(), columns=cols)
-                    self._test_features_df = pd.concat([self._test_features_df, arr], axis=1)
+                    self._test_features_df[col.name + '_count'] = self._test_df[col.name].apply(len)
+
+                self._bag_of_words(col, max_features=20, transform=lambda x: " ".join(x))
 
             # visualize
             if viz:
@@ -284,9 +291,35 @@ class Base(object):
                 elif column_type == 'time':
                     self._plot_category(col.name + '_hour')
                     self._plot_category(col.name + '_weekday')
+                    self._plot_category(col.name + '_week')
+                    self._plot_category(col.name + '_month')
+                    self._plot_category(col.name + '_year')
 
-        if viz and cols is None:
-            self._show_geo()
+        if cols is None:
+            self._process_geo(viz=viz)
+
+    def _bag_of_words(self, col, max_features=100, transform=None):
+        vectorizer = CountVectorizer(analyzer='word',
+                                     stop_words='english',
+                                     max_features=max_features)
+
+        train_col = col
+        if transform is not None:
+            train_col = train_col.apply(transform)
+
+        train_features = vectorizer.fit_transform(train_col)
+        cols2 = [col.name + '_word_' + x for x in vectorizer.get_feature_names()]
+        arr = pd.DataFrame(train_features.toarray(), columns=cols2).set_index(self._train_features_df.index)
+        self._train_features_df = pd.concat([self._train_features_df, arr], axis=1)
+
+        if self._test_df is not None:
+            test_col = test_col.apply(transform)
+            if transform is not None:
+                train_col = train_col.apply(transform)
+
+            test_features = vectorizer.transform(test_col)
+            arr = pd.DataFrame(test_features.toarray(), columns=cols2).set_index(self._test_features_df.index)
+            self._test_features_df = pd.concat([self._test_features_df, arr], axis=1)
 
     @staticmethod
     def _show_pct(message, num, denom):
@@ -296,24 +329,34 @@ class Base(object):
             message += ' (%.1f%%)' % round(pct, 1)
         return message
 
-    def _show_geo(self):
+    def _process_geo(self, viz=True):
         train_df = self._train_df
+        test_df = self._test_df
 
         geo_cols = ['latitude', 'longitude']
 
         # latitude and longtitude
         if all(x in train_df.keys() for x in geo_cols):
-            self._subheader("latitude & longitude")
+            if viz:
+                self._subheader("latitude & longitude")
 
-            # drop outliers
-            data = train_df.dropna(subset=geo_cols)
-            for col in geo_cols:
-                data = self._drop_outliers(data, col)
+                # drop outliers
+                data = train_df.dropna(subset=geo_cols)
+                for col in geo_cols:
+                    data = self._drop_outliers(data, col)
 
-            # TODO use map
-            self._plot(sns.lmplot(y='latitude', x='longitude', hue='interest_level', fit_reg=False, data=data))
+                # TODO use map
+                self._plot(sns.lmplot(y='latitude', x='longitude', hue='interest_level', fit_reg=False, data=data))
 
-            # TODO geohashes
+            if 'Geohash' in globals():
+                # TODO handle nulls
+                # precision = 8
+                # self._train_features_df['geohash'] = train_df.apply(lambda x: Geohash.encode(x['latitude'], x['longitude'], precision=precision), axis=1)
+                # if self._test_df is not None:
+                #     self._test_features_df['geohash'] = test_df.apply(lambda x: Geohash.encode(x['latitude'], x['longitude'], precision=precision), axis=1)
+                pass
+            else:
+                self._paragraph("Install the Geohash package for better feature engineering")
 
     @staticmethod
     def _drop_outliers(data, name):
@@ -357,6 +400,8 @@ class Base(object):
         numeric = col.dtype == 'int64' or col.dtype == 'float64'
         if col.dtype == 'datetime64[ns]':
             column_type = 'time'
+        elif col.dtype == 'object' and type(col.values[0]) is list:
+            column_type = 'list'
         elif average_words != None and average_words > 10:
             column_type = 'text'
         elif unique_count / float(total_count) > 0.95:

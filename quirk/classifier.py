@@ -78,28 +78,21 @@ class Classifier(Base):
         return model.predict_classes(test_x.values)
 
     def _xgboost_predict(self, train_x, train_y, test_x, test_y):
-        if self._eval_metric == 'mlogloss':
-            params = {
-                'seed': self._seed,
-                'objective': 'multi:softprob',
-                'eval_metric': 'mlogloss',
-                'num_class': len(self._classes)
-            }
+        model = xgb.XGBClassifier(seed=self._seed, n_estimators=100, max_depth=3, learning_rate=0.1)
+        self._xgboost_model = model # hack
 
-            dtrain = xgb.DMatrix(data=train_x, label=train_y)
-            dtest = xgb.DMatrix(data=test_x)
+        eval_metric = self._eval_metric or 'error'
 
-            model = xgb.train(params, dtrain, 100, verbose_eval=25)
-            self._xgboost_model = model # hack
-            return model.predict(dtest)
+        if test_y is None:
+            model.fit(train_x, train_y, eval_metric=eval_metric, verbose=10)
         else:
-            if test_y is None:
-                eval_set = []
-            else:
-                eval_set = [(train_x, train_y), (test_x, test_y)]
-            model = xgb.XGBClassifier(seed=self._seed)
-            model.fit(train_x, train_y, eval_set=eval_set, eval_metric=(self._eval_metric or 'error'))
-            self._xgboost_model = model # hack
+            eval_set = [(train_x, train_y), (test_x, test_y)]
+            model.fit(train_x, train_y, eval_set=eval_set, eval_metric=eval_metric,
+                      verbose=10)
+
+        if self._eval_metric == 'mlogloss':
+            return model.predict_proba(test_x)
+        else:
             return model.predict(test_x)
 
     def _score(self, act, pred):
