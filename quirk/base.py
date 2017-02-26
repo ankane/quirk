@@ -337,9 +337,11 @@ class Base(object):
 
             if 'Geohash' in globals():
                 # TODO handle nulls
-                self._train_features_df['geohash'] = train_df.apply(lambda x: Geohash.encode(x['latitude'], x['longitude'], precision=6), axis=1)
-                if self._test_df is not None:
-                    self._test_features_df['geohash'] = test_df.apply(lambda x: Geohash.encode(x['latitude'], x['longitude'], precision=6), axis=1)
+                # precision = 8
+                # self._train_features_df['geohash'] = train_df.apply(lambda x: Geohash.encode(x['latitude'], x['longitude'], precision=precision), axis=1)
+                # if self._test_df is not None:
+                #     self._test_features_df['geohash'] = test_df.apply(lambda x: Geohash.encode(x['latitude'], x['longitude'], precision=precision), axis=1)
+                pass
             else:
                 self._paragraph("Install the Geohash package for better feature engineering")
 
