@@ -45,7 +45,9 @@ class Classifier(Base):
         return predictions
 
     def _xgboost_predict(self, train_x, train_y, test_x, test_y):
-        model = xgb.XGBClassifier(seed=self._seed, n_estimators=100, max_depth=6, learning_rate=0.3)
+        model = xgb.XGBClassifier(seed=self._seed, n_estimators=300, max_depth=6, learning_rate=0.3)
+        self._xgboost_model = model # hack
+
         eval_metric = self._eval_metric or 'error'
 
         if test_y is None:
@@ -54,8 +56,6 @@ class Classifier(Base):
             eval_set = [(train_x, train_y), (test_x, test_y)]
             model.fit(train_x, train_y, eval_set=eval_set, eval_metric=eval_metric,
                       early_stopping_rounds=25, verbose=10)
-
-        self._xgboost_model = model # hack
 
         if self._eval_metric == 'mlogloss':
             return model.predict_proba(test_x)
