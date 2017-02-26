@@ -56,7 +56,7 @@ class Classifier(Base):
             dtrain = xgb.DMatrix(data=train_x, label=train_y)
             dtest = xgb.DMatrix(data=test_x)
 
-            num_rounds = 100
+            num_rounds = 300
 
             if test_y is None:
                 watchlist = []
@@ -65,7 +65,8 @@ class Classifier(Base):
                 wtest = xgb.DMatrix(data=test_x, label=test_y)
                 watchlist = [(dtrain, 'train'), (wtest, 'test')]
                 evals_result = {}
-                model = xgb.train(params, dtrain, num_rounds, watchlist, verbose_eval=10, evals_result=evals_result)
+                model = xgb.train(params, dtrain, num_rounds, watchlist, verbose_eval=10,
+                                  evals_result=evals_result, early_stopping_rounds=25)
                 self._evals_result = evals_result
 
             self._xgboost_model = model # hack
