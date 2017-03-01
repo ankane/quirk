@@ -313,9 +313,9 @@ class Base(object):
         self._train_features_df = pd.concat([self._train_features_df, arr], axis=1)
 
         if self._test_df is not None:
-            test_col = test_col.apply(transform)
+            test_col = self._test_df[col.name]
             if transform is not None:
-                train_col = train_col.apply(transform)
+                test_col = test_col.apply(transform)
 
             test_features = vectorizer.transform(test_col)
             arr = pd.DataFrame(test_features.toarray(), columns=cols2).set_index(self._test_features_df.index)

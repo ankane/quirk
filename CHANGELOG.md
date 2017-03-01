@@ -1,3 +1,7 @@
+## 0.1.3 [unreleased]
+
+- Fixed error with bag of words
+
 ## 0.1.2
 
 - Added support for RMSLE, multi class log loss, and AUC
