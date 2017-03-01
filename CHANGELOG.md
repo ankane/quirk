@@ -1,6 +1,6 @@
-## 0.1.2 [unreleased]
+## 0.1.2
 
-- Added support for RMSLE and mlogloss
+- Added support for RMSLE, multi class log loss, and AUC
 
 ## 0.1.1
 

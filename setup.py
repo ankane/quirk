@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='quirk',
-    version='0.1.1',
+    version='0.1.2',
     description='Build powerful predictive models with a few lines of code',
     url='https://github.com/ankane/quirk',
     author='Andrew Kane',

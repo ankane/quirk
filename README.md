@@ -90,7 +90,7 @@ Regression
 - `rmse` - root mean square error (default)
 - `rmsle` - root mean square logarithmic error
 
-Specify an eval metric with: [master]
+Specify an eval metric with:
 
 ```python
 quirk.Classifier(eval_metric='mlogloss', ...)
