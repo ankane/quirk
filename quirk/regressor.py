@@ -47,6 +47,11 @@ class Regressor(Base):
             model.fit(train_x, train_y, eval_set=eval_set,
                       early_stopping_rounds=25, verbose=10)
 
+            # TODO refit model if stopped early
+            # https://github.com/dmlc/xgboost/issues/2064
+            # print 'Best nr of trees:', model.best_ntree_limit
+            # model.set_params(**{'n_estimators': model.best_ntree_limit})
+
         return model.predict(test_x)
 
     def _score(self, act, pred):
