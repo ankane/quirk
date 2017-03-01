@@ -269,8 +269,6 @@ class Base(object):
                 self._train_features_df[col.name + '_num_words'] = self._word_count(col)
                 self._test_features_df[col.name + '_num_words'] = self._word_count(col)
 
-                continue
-
                 # might take a while
                 self._paragraph('Processing ' + col.name + '...')
 
