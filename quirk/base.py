@@ -188,9 +188,9 @@ class Base(object):
     def _summarize_data(self):
         self._header('Data')
 
-        lines = ['Training set: %d rows' % len(self._train_df)]
+        lines = ['Training set size: %d' % len(self._train_df)]
         if self._test_df is not None:
-            lines.append('Test set: %d rows' % len(self._test_df))
+            lines.append('Test set size: %d' % len(self._test_df))
 
         self._paragraph(*lines)
         self._table(self._train_df_head)
