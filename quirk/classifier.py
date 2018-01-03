@@ -25,7 +25,9 @@ class Classifier(Base):
         data = self._train_features_df.dropna(subset=[name])
         data = self._drop_outliers(data, name)
 
-        self._plot(sns.distplot(data[name]))
+        # prevent seaborn error
+        if(len(data[name].unique())) > 1:
+            self._plot(sns.distplot(data[name]))
         self._plot(sns.boxplot(y=name, x=self._target_col,
                                data=data))
 
