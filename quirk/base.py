@@ -35,6 +35,9 @@ class Base(object):
         train_df = self._fetch_data(train_data)
         test_df = self._fetch_data(test_data)
 
+        if test_df is not None:
+            self._id_series = test_df[id_col]
+
         # default is None rather than []
         # due to potentially dangerous Python behavior
         if datetime_cols is not None:
@@ -160,7 +163,7 @@ class Base(object):
         preds = self._xgboost_predict(train_x, train_y, test_x, None)
 
         out_df = pd.DataFrame()
-        out_df[self._id_col] = self._test_df[self._id_col].values
+        out_df[self._id_col] = self._id_series.values
 
         if self._eval_metric == 'mlogloss':
             for i, label in enumerate(self._classes):
