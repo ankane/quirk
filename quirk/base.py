@@ -136,6 +136,7 @@ class Base(object):
 
         # benchmark models
         predictions = self._build_models(dev_x, dev_y, val_x, val_y)
+        self._predictions = predictions
 
         # score models
         scores = OrderedDict()

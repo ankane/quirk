@@ -20,7 +20,7 @@ pip install quirk
 
 ## Getting Started
 
-For rich visualizations, run Quirk from a [Jupyter notebook](http://jupyter.org/).
+For rich visualizations, run Quirk from a [Jupyter notebook](https://jupyter.org/).
 
 For classification, use:
 
@@ -103,7 +103,7 @@ Quirk builds and compares different models. Currently, it uses:
 1. boosted trees
 2. simple benchmarks (mode for classification, mean and median for regression)
 
-[XGBoost](https://github.com/dmlc/xgboost) is required for boosted trees. See [how to install](http://xgboost.readthedocs.io/en/latest/build.html). On Mac, use:
+[XGBoost](https://github.com/dmlc/xgboost) is required for boosted trees. See [how to install](https://xgboost.readthedocs.io/en/latest/build.html). On Mac, use:
 
 ```sh
 git clone --recursive https://github.com/dmlc/xgboost
