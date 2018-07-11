@@ -25,6 +25,8 @@ For rich visualizations, run Quirk from a [Jupyter notebook](https://jupyter.org
 For classification, use:
 
 ```python
+%matplotlib inline
+
 import quirk
 
 qk = quirk.Classifier(
@@ -103,12 +105,10 @@ Quirk builds and compares different models. Currently, it uses:
 1. boosted trees
 2. simple benchmarks (mode for classification, mean and median for regression)
 
-[XGBoost](https://github.com/dmlc/xgboost) is required for boosted trees. See [how to install](https://xgboost.readthedocs.io/en/latest/build.html). On Mac, use:
+[XGBoost](https://github.com/dmlc/xgboost) is required for boosted trees. See [https://github.com/dmlc/xgboost/tree/master/python-package). On Mac, use:
 
 ```sh
-git clone --recursive https://github.com/dmlc/xgboost
-cd xgboost; cp make/minimum.mk ./config.mk; make -j4
-cd python-package; sudo python setup.py install
+pip install xgboost
 ```
 
 ## Performance
