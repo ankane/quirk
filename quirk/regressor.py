@@ -46,6 +46,7 @@ class Regressor(Base):
         predictions['XGBoost'] = self._xgboost_predict(train_x, train_y, test_x, test_y)
         predictions['LightGBM'] = self._xgboost_predict(train_x, train_y, test_x, test_y)
         predictions['CatBoost'] = self._catboost_predict(train_x, train_y, test_x, test_y)
+        predictions['Ensemble'] = np.mean(np.array([predictions['XGBoost'], predictions['LightGBM']]), axis=0)
         return predictions
 
     def _xgboost_predict(self, train_x, train_y, test_x, test_y):
