@@ -75,8 +75,6 @@ class Regressor(Base):
             return model.predict(test_x)
 
     def _lightgbm_predict(self, train_x, train_y, test_x, test_y):
-        model = CatBoostRegressor(random_seed=self._seed)
-
         if self._eval_metric == 'rmsle':
             train_y = np.log1p(train_y)
             if test_y is not None:
@@ -109,7 +107,7 @@ class Regressor(Base):
             return model.predict(test_x, num_iteration=gbm.best_iteration)
 
     def _catboost_predict(self, train_x, train_y, test_x, test_y):
-        model = CatBoostRegressor(random_seed=self._seed)
+        model = CatBoostRegressor(random_seed=self._seed, n_estimators=300, max_depth=3, learning_rate=0.1)
 
         if self._eval_metric == 'rmsle':
             train_y = np.log1p(train_y)
@@ -117,10 +115,10 @@ class Regressor(Base):
                 test_y = np.log1p(test_y)
 
         if test_y is None:
-            model.fit(train_x, train_y, verbose=10)
+            model.fit(train_x, train_y, verbose=10, use_best_model=True)
         else:
             eval_set = (test_x, test_y)
-            model.fit(train_x, train_y, eval_set=eval_set, verbose=10)
+            model.fit(train_x, train_y, eval_set=eval_set, verbose=10, use_best_model=True)
 
         if self._eval_metric == 'rmsle':
             return np.expm1(model.predict(test_x))
