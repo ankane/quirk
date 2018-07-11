@@ -117,7 +117,7 @@ Dataset | Eval Metric | v0.1 | Current
 --- | --- | --- | ---
 [Titanic](https://www.kaggle.com/c/titanic) | Accuracy | 0.77512 | 0.77512
 [Rental Listing Inquiries](https://www.kaggle.com/c/two-sigma-connect-rental-listing-inquiries) | Multi Class Log Loss | - | 0.61861
-[House Prices](https://www.kaggle.com/c/house-prices-advanced-regression-techniques) | RMSLE | 0.14069 | 0.13355
+[House Prices](https://www.kaggle.com/c/house-prices-advanced-regression-techniques) | RMSLE | 0.14069 | 0.13108
 
 ## History
 
