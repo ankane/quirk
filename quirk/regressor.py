@@ -3,7 +3,7 @@ from collections import OrderedDict
 import pandas as pd
 import seaborn as sns
 from sklearn.metrics import mean_squared_error
-from numpy import log1p
+import numpy as np
 
 try:
     import xgboost as xgb
@@ -40,6 +40,11 @@ class Regressor(Base):
         model = xgb.XGBRegressor(seed=self._seed, n_estimators=300, max_depth=3, learning_rate=0.1)
         self._xgboost_model = model # hack
 
+        if self._eval_metric == 'rmsle':
+            train_y = np.log1p(train_y)
+            if test_y is not None:
+                test_y = np.log1p(test_y)
+
         if test_y is None:
             model.fit(train_x, train_y, verbose=10)
         else:
@@ -52,10 +57,13 @@ class Regressor(Base):
             # print 'Best nr of trees:', model.best_ntree_limit
             # model.set_params(**{'n_estimators': model.best_ntree_limit})
 
-        return model.predict(test_x)
+        if self._eval_metric == 'rmsle':
+            return np.expm1(model.predict(test_x))
+        else:
+            return model.predict(test_x)
 
     def _score(self, act, pred):
         if self._eval_metric == 'rmsle':
-            return sqrt(mean_squared_error(log1p(act), log1p(pred)))
+            return sqrt(mean_squared_error(np.log1p(act), np.log1p(pred)))
         else:
             return sqrt(mean_squared_error(act, pred))
