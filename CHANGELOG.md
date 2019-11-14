@@ -6,11 +6,11 @@
 
 - Added support for RMSLE, multi class log loss, and AUC
 
-## 0.1.1
+## 0.1.1 (2017-02-21)
 
 - Added support for Python 3
 - Added outlier detection
 
-## 0.1.0
+## 0.1.0 (2017-02-21)
 
 - First release
