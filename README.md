@@ -137,6 +137,6 @@ To get started with development:
 ```sh
 git clone https://github.com/ankane/quirk.git
 cd quirk
-pip3 install -r requirements.txt
+pip install -r requirements.txt
 py.test tests
 ```
