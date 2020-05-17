@@ -1,4 +1,4 @@
-## 0.1.3 (unreleased)
+## 0.1.3 (2020-05-16)
 
 - Fixed scikit-learn dependency
 - Fixed error with bag of words
