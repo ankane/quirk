@@ -12,7 +12,7 @@ setup(
     install_requires=[
         'pandas',
         'seaborn',
-        'sklearn',
+        'scikit-learn',
         'matplotlib',
         'scipy'
     ],

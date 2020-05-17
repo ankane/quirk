@@ -1,5 +1,6 @@
-## 0.1.3 [unreleased]
+## 0.1.3 (unreleased)
 
+- Fixed scikit-learn dependency
 - Fixed error with bag of words
 
 ## 0.1.2 (2017-02-28)
