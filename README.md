@@ -105,7 +105,7 @@ Quirk builds and compares different models. Currently, it uses:
 1. boosted trees
 2. simple benchmarks (mode for classification, mean and median for regression)
 
-[XGBoost](https://github.com/dmlc/xgboost) is required for boosted trees. See [how to install](https://github.com/dmlc/xgboost/tree/master/python-package). On Mac, use:
+[XGBoost](https://github.com/dmlc/xgboost) is required for boosted trees. Install it with:
 
 ```sh
 pip install xgboost
