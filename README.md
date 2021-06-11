@@ -10,6 +10,8 @@ Quirk does:
 - feature engineering
 - predictive modeling
 
+[![Build Status](https://github.com/ankane/quirk/workflows/build/badge.svg?branch=master)](https://github.com/ankane/quirk/actions)
+
 ## Installation
 
 With pip, run:
