@@ -4,4 +4,4 @@ scikit-learn
 matplotlib
 scipy
 ipython
-pytest==3.0.6
+pytest
